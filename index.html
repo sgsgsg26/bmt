@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3대 AI가 추천하는 금주의 로또 당첨 번호 비법</title>
+  <meta name="description" content="Gemini, Claude, Chat GPT의 로또 가상 추천 조합을 비교하는 다크 모드 대시보드" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Pretendard Variable", "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(59, 130, 246, 0.16), transparent 28%),
+        radial-gradient(circle at 85% 10%, rgba(16, 185, 129, 0.12), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.12), transparent 28%),
+        linear-gradient(180deg, #020617 0%, #0f172a 45%, #111827 100%);
+      min-height: 100vh;
+      color: #e5e7eb;
+    }
+
+    .glass {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .dashboard-card {
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .dashboard-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 22%);
+      pointer-events: none;
+    }
+
+    .gemini-glow:hover {
+      box-shadow: 0 20px 44px rgba(59, 130, 246, 0.22);
+    }
+
+    .claude-glow:hover {
+      box-shadow: 0 20px 44px rgba(249, 115, 22, 0.22);
+    }
+
+    .chatgpt-glow:hover {
+      box-shadow: 0 20px 44px rgba(16, 185, 129, 0.22);
+    }
+
+    .title-glow {
+      text-shadow: 0 0 24px rgba(250, 204, 21, 0.16), 0 0 32px rgba(99, 102, 241, 0.16);
+    }
+
+    .hero-badge {
+      background: rgba(30, 41, 59, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .metric-pill {
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .stat-box {
+      background: rgba(148, 163, 184, 0.06);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .soft-divider {
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .chart-box {
+      position: relative;
+      height: 190px;
+      width: 100%;
+    }
+
+    .lotto-ball {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow:
+        inset 0 2px 6px rgba(255, 255, 255, 0.22),
+        inset 0 -6px 10px rgba(0, 0, 0, 0.22),
+        0 10px 18px rgba(0, 0, 0, 0.28);
+    }
+
+    .ball-yellow {
+      background: linear-gradient(135deg, #fde047, #f59e0b);
+      color: #111827;
+    }
+
+    .ball-blue {
+      background: linear-gradient(135deg, #93c5fd, #2563eb);
+      color: #eff6ff;
+    }
+
+    .ball-red {
+      background: linear-gradient(135deg, #fda4af, #dc2626);
+      color: #fff1f2;
+    }
+
+    .ball-gray {
+      background: linear-gradient(135deg, #e2e8f0, #64748b);
+      color: #0f172a;
+    }
+
+    .ball-green {
+      background: linear-gradient(135deg, #86efac, #16a34a);
+      color: #052e16;
+    }
+  </style>
+</head>
+<body>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+    <header class="glass rounded-3xl px-6 sm:px-8 py-8 text-center mb-8">
+      <div class="inline-flex items-center gap-2 hero-badge text-slate-300 rounded-full px-4 py-2 text-xs sm:text-sm mb-5">
+        <span>AI Lottery Insight Dashboard</span>
+        <span class="text-slate-500">•</span>
+        <span>교육용 시연 페이지</span>
+      </div>
+
+      <h1 class="title-glow text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+        ✨ 3대 AI가 추천하는 금주의 로또 당첨 번호 비법 ✨
+      </h1>
+    </header>
+
+    <main>
+      <section class="grid grid-cols-1 xl:grid-cols-3 gap-6" id="dashboardGrid"></section>
+
+      <section class="mt-8 glass rounded-3xl p-6 lg:p-7">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold tracking-tight text-slate-100">한눈에 보는 분석 스타일 비교</h2>
+            <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+              세 AI 모두 같은 주제를 다루지만, 데이터 빈도 분석, 구조적 균형 분석, 시뮬레이션형 조합 제안처럼 서로 다른 결을 보여줍니다.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+            <div class="metric-pill rounded-2xl px-4 py-3 text-center">
+              <div class="text-xs text-slate-400">Gemini</div>
+              <div class="text-base font-bold text-sky-300">패턴 분석형</div>
+            </div>
+            <div class="metric-pill rounded-2xl px-4 py-3 text-center">
+              <div class="text-xs text-slate-400">Claude</div>
+              <div class="text-base font-bold text-orange-300">균형 전략형</div>
+            </div>
+            <div class="metric-pill rounded-2xl px-4 py-3 text-center">
+              <div class="text-xs text-slate-400">Chat GPT</div>
+              <div class="text-base font-bold text-emerald-300">시뮬레이션형</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-8">
+      <div class="glass rounded-3xl px-6 py-5 text-sm sm:text-base text-slate-300 text-center leading-relaxed">
+        ※ 본 대시보드의 예측은 각 AI의 고유한 분석 방식에 따른 가상 추천일 뿐이며, 실제 당첨 결과는 보장하지 않습니다 😉
+        <span class="text-slate-400">(연수에서 직접 AI 비서를 만들어보세요!)</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const aiData = [
+      {
+        key: "gemini",
+        aiName: "Gemini 패턴 분석 엔진",
+        displayName: "♊ Gemini 패턴 분석 엔진",
+        cardTitle: "이번 주 로또 확률 기반 가상 조합 리포트",
+        summary: "누적 고빈도 데이터와 단기 미출현 패턴을 교차 분석한 가상 예측 시뮬레이션",
+        numbers: [4, 15, 23, 27, 34, 41],
+        report: [
+          "최근 15주간의 번호별 출현 간격과 역대 누적 고빈도 데이터를 결합하여 가상 번호를 추출했습니다.",
+          "홀수와 짝수의 비율을 4:2로, 저고(1~22/23~45) 비율을 2:4로 설정하여 통계적 회귀 경향성을 반영했습니다.",
+          "특히 장기 미출현 사이클에 진입한 20번대와 꾸준한 출현율을 유지 중인 30번대 데이터에 가중치를 부여했습니다.",
+          "본 결과물은 데이터 패턴 분석 알고리즘을 시연하기 위한 교육용 가상 데이터이며, 실제 당첨을 보장하지 않습니다."
+        ],
+        accentText: "text-sky-300",
+        badgeClass: "gemini-glow"
+      },
+      {
+        key: "claude",
+        aiName: "Claude",
+        displayName: "🤖 Claude의 전략 분석",
+        cardTitle: "제1175회 로또 가상 추천 번호",
+        summary: "출현 빈도·홀짝 균형·번호대 분산을 종합한 가상 분석 추천",
+        numbers: [3, 12, 23, 34, 38, 44],
+        report: [
+          "출현 빈도 상위권 번호(34, 44, 12)와 중간 빈도 번호(3, 23, 38)를 혼합하여 편향을 줄였습니다.",
+          "홀수 3개(3, 23, 23→38 제외 시 3, 23) / 짝수 3개(12, 34, 38, 44) — 홀짝 비율을 3:3으로 맞춰 역대 최다 출현 비율에 근접시켰습니다.",
+          "1~15 저번호대 2개, 16~30 중번호대 1개, 31~45 고번호대 3개로 번호대를 분산 배치했습니다.",
+          "이 추천은 과거 통계 패턴에 기반한 가상 분석이며, 로또는 매 회차 독립 추첨이므로 실제 당첨을 보장하지 않습니다."
+        ],
+        accentText: "text-orange-300",
+        badgeClass: "claude-glow"
+      },
+      {
+        key: "chatgpt",
+        aiName: "Chat GPT의 전략",
+        displayName: "💬 Chat GPT의 전략",
+        cardTitle: "이번 주 로또 가상 분석 추천 조합",
+        summary: "출현 빈도·최근 간격·홀짝 균형·번호대 분포를 조합한 시뮬레이션 기반 추천입니다.",
+        numbers: [4, 11, 18, 27, 33, 42],
+        report: [
+          "저번호와 고번호 비율을 3:3으로 맞춰 흐름 균형을 반영했습니다.",
+          "최근 출현 간격이 길었던 번호와 중간 빈도 번호를 함께 섞었습니다.",
+          "홀짝 비율은 2:4로 구성해 최근 패턴 변동성을 고려했습니다.",
+          "실제 당첨을 보장하지 않는 교육용·시연용 가상 추천 조합입니다."
+        ],
+        accentText: "text-emerald-300",
+        badgeClass: "chatgpt-glow"
+      }
+    ];
+
+    const dashboardGrid = document.getElementById("dashboardGrid");
+
+    function getBallClass(number) {
+      if (number <= 10) return "ball-yellow";
+      if (number <= 20) return "ball-blue";
+      if (number <= 30) return "ball-red";
+      if (number <= 40) return "ball-gray";
+      return "ball-green";
+    }
+
+    function countOdd(numbers) {
+      return numbers.filter(n => n % 2 !== 0).length;
+    }
+
+    function countEven(numbers) {
+      return numbers.filter(n => n % 2 === 0).length;
+    }
+
+    function countLow(numbers) {
+      return numbers.filter(n => n <= 22).length;
+    }
+
+    function countHigh(numbers) {
+      return numbers.filter(n => n >= 23).length;
+    }
+
+    function getSpread(numbers) {
+      return Math.max(...numbers) - Math.min(...numbers);
+    }
+
+    function getAccentValue(key, value) {
+      if (key === "gemini") return `<span class="text-sky-300 font-bold">${value}</span>`;
+      if (key === "claude") return `<span class="text-orange-300 font-bold">${value}</span>`;
+      return `<span class="text-emerald-300 font-bold">${value}</span>`;
+    }
+
+    function createCard(ai) {
+      const odd = countOdd(ai.numbers);
+      const even = countEven(ai.numbers);
+      const low = countLow(ai.numbers);
+      const high = countHigh(ai.numbers);
+      const spread = getSpread(ai.numbers);
+
+      const numbersHtml = ai.numbers
+        .map(n => `<div class="lotto-ball ${getBallClass(n)}">${n}</div>`)
+        .join("");
+
+      const reportHtml = ai.report
+        .map(line => `<p>${line}</p>`)
+        .join("");
+
+      const accentBorder =
+        ai.key === "gemini"
+          ? "border-sky-500/20"
+          : ai.key === "claude"
+          ? "border-orange-500/20"
+          : "border-emerald-500/20";
+
+      dashboardGrid.innerHTML += `
+        <article class="glass dashboard-card ${ai.badgeClass} rounded-3xl p-6 lg:p-7 flex flex-col ${accentBorder}">
+          <div>
+            <div class="text-xl lg:text-2xl font-extrabold tracking-tight ${ai.accentText}">
+              ${ai.displayName}
+            </div>
+            <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+              ${ai.cardTitle}
+            </p>
+          </div>
+
+          <div class="mt-5 rounded-2xl bg-slate-900/40 border border-white/5 px-4 py-3 text-sm text-slate-200 leading-relaxed">
+            ${ai.summary}
+          </div>
+
+          <div class="mt-6">
+            <div class="flex flex-wrap gap-3">
+              ${numbersHtml}
+            </div>
+          </div>
+
+          <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+            <div class="stat-box rounded-2xl p-3">
+              <div class="text-xs text-slate-400">홀짝 비율</div>
+              <div class="mt-1 text-lg font-bold">${getAccentValue(ai.key, `${odd}:${even}`)}</div>
+            </div>
+            <div class="stat-box rounded-2xl p-3">
+              <div class="text-xs text-slate-400">저고 비율</div>
+              <div class="mt-1 text-lg font-bold">${getAccentValue(ai.key, `${low}:${high}`)}</div>
+            </div>
+            <div class="stat-box rounded-2xl p-3">
+              <div class="text-xs text-slate-400">번호 간격</div>
+              <div class="mt-1 text-lg font-bold">${getAccentValue(ai.key, spread)}</div>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-slate-200">시각화 분석</h3>
+              <span class="text-xs text-slate-400">${ai.aiName}</span>
+            </div>
+            <div class="chart-box">
+              <canvas id="${ai.key}Chart"></canvas>
+            </div>
+          </div>
+
+          <div class="soft-divider mt-6 pt-5">
+            <h3 class="text-sm font-semibold text-slate-200 mb-3">분석 리포트</h3>
+            <div class="space-y-2 text-sm leading-6 text-slate-300">
+              ${reportHtml}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    aiData.forEach(createCard);
+
+    const gridColor = "rgba(148, 163, 184, 0.16)";
+    const tickColor = "#cbd5e1";
+
+    new Chart(document.getElementById("geminiChart"), {
+      type: "bar",
+      data: {
+        labels: aiData[0].numbers.map(String),
+        datasets: [{
+          label: "패턴 가중치",
+          data: [78, 66, 88, 81, 74, 69],
+          borderRadius: 10,
+          backgroundColor: [
+            "rgba(56, 189, 248, 0.88)",
+            "rgba(96, 165, 250, 0.88)",
+            "rgba(14, 165, 233, 0.88)",
+            "rgba(59, 130, 246, 0.88)",
+            "rgba(99, 102, 241, 0.88)",
+            "rgba(125, 211, 252, 0.88)"
+          ]
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            borderColor: "rgba(56, 189, 248, 0.3)",
+            borderWidth: 1,
+            titleColor: "#e0f2fe",
+            bodyColor: "#e2e8f0"
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: tickColor }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            grid: { color: gridColor },
+            ticks: { color: tickColor }
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById("claudeChart"), {
+      type: "radar",
+      data: {
+        labels: ["출현 빈도", "홀짝 균형", "번호 분산", "구간 배치", "안정성"],
+        datasets: [{
+          label: "전략 점수",
+          data: [91, 79, 88, 90, 86],
+          fill: true,
+          backgroundColor: "rgba(249, 115, 22, 0.16)",
+          borderColor: "rgba(249, 115, 22, 0.92)",
+          pointBackgroundColor: "rgba(253, 186, 116, 1)",
+          pointBorderColor: "#fff7ed",
+          pointRadius: 4
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            borderColor: "rgba(249, 115, 22, 0.3)",
+            borderWidth: 1,
+            titleColor: "#ffedd5",
+            bodyColor: "#e2e8f0"
+          }
+        },
+        scales: {
+          r: {
+            angleLines: { color: gridColor },
+            grid: { color: gridColor },
+            suggestedMin: 0,
+            suggestedMax: 100,
+            pointLabels: {
+              color: tickColor,
+              font: { size: 11 }
+            },
+            ticks: {
+              display: false,
+              stepSize: 20
+            }
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById("chatgptChart"), {
+      type: "doughnut",
+      data: {
+        labels: ["출현 빈도", "최근 간격", "홀짝 균형", "번호대 분포", "시뮬레이션"],
+        datasets: [{
+          data: [22, 18, 16, 19, 25],
+          backgroundColor: [
+            "rgba(16, 185, 129, 0.95)",
+            "rgba(52, 211, 153, 0.9)",
+            "rgba(45, 212, 191, 0.9)",
+            "rgba(20, 184, 166, 0.88)",
+            "rgba(110, 231, 183, 0.85)"
+          ],
+          borderWidth: 2,
+          borderColor: "#0f172a",
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              color: tickColor,
+              boxWidth: 12,
+              usePointStyle: true,
+              padding: 16
+            }
+          },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            borderColor: "rgba(16, 185, 129, 0.3)",
+            borderWidth: 1,
+            titleColor: "#d1fae5",
+            bodyColor: "#e2e8f0"
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
